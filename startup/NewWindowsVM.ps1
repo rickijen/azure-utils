@@ -22,9 +22,9 @@ $availset=Get-AzureRmAvailabilitySet -ResourceGroupName redondo
 $vm1=New-AzureVMConfig -Name $vmname -InstanceSize $vmsize -ImageName $image -AvailabilitySetName $availset.Name
 #$cred=Get-Credential -Message "Type the name and password of the local administrator account."
 #$vm1 | Add-AzureProvisioningConfig -Windows -AdminUsername $cred.GetNetworkCredential().Username -Password $cred.GetNetworkCredential().Password
-$vm1 | Add-AzureProvisioningConfig -Windows -AdminUsername $azCredential.Username -Password $azCredential.Password
+$vm1 | Add-AzureProvisioningConfig -Windows -AdminUsername "weswes" -Password $azCredential.Password
 $vm1 | Set-AzureSubnet -SubnetNames "Subnet-1"
-$disksize=1GB
+$disksize=1
 $disklabel="mcdatadisk"
 $lun=1
 $hcaching="None"
