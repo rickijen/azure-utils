@@ -29,10 +29,10 @@ $vm1=New-AzureVMConfig -Name $vmname -InstanceSize $vmsize -ImageName $image -Av
 $vm1 | Add-AzureProvisioningConfig -Windows -AdminUsername "weswes" -Password $azCredential.Password
 $vm1 | Set-AzureSubnet -SubnetNames "Subnet-1"
 $disksize=1
-$disklabel="mcdatadisk"
-$lun=1
+$disklabel="DCData"
+$lun=0
 $hcaching="None"
 $vm1 | Add-AzureDataDisk -CreateNew -DiskSizeInGB $disksize -DiskLabel $disklabel -LUN $lun -HostCaching $hcaching
-$svcname="redondomc"
+$svcname="redondomcw"
 $vnetname="redondomc"
 New-AzureVM –ServiceName $svcname -VMs $vm1 -VNetName $vnetname
