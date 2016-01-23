@@ -4,9 +4,9 @@
 
 # Generate password file
 #$credential = Get-Credential
-#$credential.Password | ConvertFrom-SecureString | Set-Content c:\users\bach\azpassword2.txt
+#$credential.Password | ConvertFrom-SecureString | Set-Content C:\Users\rijen\azure-utils\startup\azpassword.txt
 
-$installedPasswordFile = "c:\azpassword.txt"
+$installedPasswordFile = "C:\Users\rijen\azure-utils\startup\azpassword.txt"
 $packagedPasswordFile = Join-Path (Split-Path $profile) azpassword.txt
 
 If (Test-Path $installedPasswordFile){
