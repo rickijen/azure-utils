@@ -1,4 +1,8 @@
-﻿$installedPasswordFile = "C:\Users\rijen\azure-utils\startup\azpassword.txt"
+﻿#
+# New Windows VM
+#
+
+$installedPasswordFile = "C:\Users\rijen\azure-utils\startup\azpassword.txt"
 $packagedPasswordFile = Join-Path (Split-Path $profile) azpassword.txt
 
 If (Test-Path $installedPasswordFile){
