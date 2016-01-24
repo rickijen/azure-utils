@@ -1,21 +1,19 @@
 ﻿#
-# New Centos VM in ARM
+# New Windows Server 2012 R2 Datacenter in ARM
 #
-
-
 
 # New Storage account
 <#
-$rgName="redondo"
-$locName="South Central US"
-$saName="redondostorage"
+$rgName="redondo2"
+$locName="westus"
+$saName="redondostoragewest"
 $saType="Standard_LRS"
 New-AzureRmStorageAccount -Name $saName -ResourceGroupName $rgName –Type $saType -Location $locName
 #>
 
-$domName="redondomc2"
-$loc="southcentralus"
-Test-AzureRmDnsAvailability -DomainQualifiedName $domName -Location $loc
+$vmName="redondomcw"
+$locName="westus"
+Test-AzureRmDnsAvailability -DomainQualifiedName $vmName -Location $locName
 
 # New Availability set
 <#
@@ -38,16 +36,16 @@ $backendSubnet=New-AzureRmVirtualNetworkSubnetConfig -Name backendSubnet -Addres
 New-AzureRmVirtualNetwork -Name redondovnet -ResourceGroupName $rgName -Location $locName -AddressPrefix 10.0.0.0/16 -Subnet $frontendSubnet,$backendSubnet
 #>
 
-$rgName="redondo"
-$locName="southcentralus"
-$saName="redondostorage"
-$vnetName="redondovnet"
-$vnet=Get-AzureRmVirtualNetwork -Name $vnetName -ResourceGroupName $rgName | Select Subnets
+$rgName="redondo2"
+$locName="westus"
+$saName="redondostoragewest"
+$vnetName="redondo2-vnet"
+$vnet=Get-AzureRmVirtualNetwork -Name $vnetName -ResourceGroupName $rgName
 
 # NIC & DNS name
-$nicName="mc-nic0"
-$domName="redondomc"
-$subnetIndex=0
+$nicName="mcw-nic0"
+$domName=$vmName
+$subnetIndex=1 # backendSubnet
 $pip = New-AzureRmPublicIpAddress -Name $nicName -ResourceGroupName $rgName -DomainNameLabel $domName -Location $locName -AllocationMethod Dynamic
 $nic = New-AzureRmNetworkInterface -Name $nicName -ResourceGroupName $rgName -Location $locName -SubnetId $vnet.Subnets[$subnetIndex].Id -PublicIpAddressId $pip.Id
 
@@ -57,7 +55,6 @@ $locName="southcentralus"
 Get-AzureRmVMSize -Location $locName | Select Name
 #>
 
-$vmName="redondomc2"
 $vmSize="Basic_A2"
 $avName="mc-availability-set"
 $avSet=Get-AzureRmAvailabilitySet –Name $avName –ResourceGroupName $rgName
@@ -66,24 +63,32 @@ $avSet=Get-AzureRmAvailabilitySet –Name $avName –ResourceGroupName $rgName
 $vm=New-AzureRmVMConfig -VMName $vmName -VMSize $vmSize -AvailabilitySetId $avset.Id
 
 # Additional Disk
-$diskSize=1
-$diskLabel="mcDataDisk01"
-$diskName="20160123-DISK01"
+$diskSize=10
+$diskLabel="mcDataDisk02"
+$diskName="20160124-DISK02"
 $storageAcc=Get-AzureRmStorageAccount -ResourceGroupName $rgName -Name $saName
 $vhdURI=$storageAcc.PrimaryEndpoints.Blob.ToString() + "vhds/" + $vmName + $diskName  + ".vhd"
 Add-AzureRmVMDataDisk -VM $vm -Name $diskLabel -DiskSizeInGB $diskSize -VhdUri $vhdURI  -CreateOption empty
 
-#$image=Get-AzureRmVMImage -Location "south central US" -Offer "centos" -PublisherName "openlogic" -Skus "6.7"
+# Prepare OS image
+$pubName="MicrosoftWindowsServer"
+$offerName="WindowsServer"
+$skuName="2012-R2-Datacenter"
+#$image=Get-AzureRmVMImage -Location $locName -Offer $offerName -PublisherName $pubName -Skus $skuName
 
-$pubName="openlogic"
-$offerName="centos"
-$skuName="6.7"
 
+# Specify the image and local administrator account, and then add the NIC
 $cred=Get-Credential -Message "Type the name and password of the local administrator account."
 $vm=Set-AzureRmVMOperatingSystem -VM $vm -Windows -ComputerName $vmName -Credential $cred -ProvisionVMAgent -EnableAutoUpdate
 $vm=Set-AzureRmVMSourceImage -VM $vm -PublisherName $pubName -Offer $offerName -Skus $skuName -Version "latest"
 $vm=Add-AzureRmVMNetworkInterface -VM $vm -Id $nic.Id
-$vm=Set-AzureRmVMOSDisk -VM $vm -Name $diskName -VhdUri $vhdURI -CreateOption fromImage
+
+# Specify the OS disk name
+$diskName="OSDisk"
+$storageAcc=Get-AzureRmStorageAccount -ResourceGroupName $rgName -Name $saName
+$osDiskUri=$storageAcc.PrimaryEndpoints.Blob.ToString() + "vhds/" + $vmName + $diskName  + ".vhd"
+$vm=Set-AzureRmVMOSDisk -VM $vm -Name $diskName -VhdUri $osDiskUri -CreateOption fromImage
+New-AzureRmVM -ResourceGroupName $rgName -Location $locName -VM $vm
 
 # Go!
 New-AzureRmVM -ResourceGroupName $rgName -Location $locName -VM $vm
