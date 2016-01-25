@@ -83,4 +83,5 @@ $vm=Set-AzureRmVMSourceImage -VM $vm -PublisherName $pubName -Offer $offerName -
 $vm=Add-AzureRmVMNetworkInterface -VM $vm -Id $nic.Id
 
 # Go!
+Write-Output "`nCreateing $vmName ......`n"
 New-AzureRmVM -ResourceGroupName $rgName -Location $locName -VM $vm
