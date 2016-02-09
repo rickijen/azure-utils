@@ -21,6 +21,7 @@ $sshKeyData = [IO.File]::ReadAllText("C:\Users\rijen\rijen_public_key")
 # New resource group and resources required to build a new VM
 <#
 New-AzureRmResourceGroup -Name $resourceGroupName -Location $location
+New-AzureRmVirtualNetwork -Name $virtualNetworkName -ResourceGroupName $resourceGroupName -Location $location
 New-AzureRmNetworkSecurityGroup -Name $networkSecurityGroupName -ResourceGroupName $resourceGroupName -Location $location
 New-AzureRmStorageAccount -ResourceGroupName $resourceGroupName -Type Standard_LRS -Location $location -Name $storageAccountname
 New-AzureRmAvailabilitySet -Name $applicationServerAvailabilitySetName -ResourceGroupName $resourceGroupName -Location $location
@@ -37,7 +38,7 @@ if ($vnet -eq $null) {
 
 # existing resources
 $applicationServerSecurityGroup = Get-AzureRmNetworkSecurityGroup -Name $networkSecurityGroupName -ResourceGroupName $resourceGroupName
-$applicationServerAvailabilitySet = Get-AzureRmAvailabilitySet –Name $applicationServerAvailabilitySetName –ResourceGroupName $resourceGroupName
+#$applicationServerAvailabilitySet = Get-AzureRmAvailabilitySet –Name $applicationServerAvailabilitySetName –ResourceGroupName $resourceGroupName
 $virtualNetwork = Get-AzureRmVirtualNetwork -Name $virtualNetworkName -ResourceGroupName $resourceGroupName
 $storageAccount = Get-AzureRmStorageAccount -ResourceGroupName $resourceGroupName -Name $storageAccountname
 
@@ -67,7 +68,8 @@ $osProfile.LinuxConfiguration.Ssh = [Microsoft.Azure.Management.Compute.Models.S
 $osProfile.LinuxConfiguration.Ssh.PublicKeys = $sshPublicKeyList
 
 # New VM config
-$virtualMachineConfig = New-AzureRmVMConfig -VMName $machineName -VMSize $applicationServerSize -AvailabilitySetId $applicationServerAvailabilitySet.Id
+#$virtualMachineConfig = New-AzureRmVMConfig -VMName $machineName -VMSize $applicationServerSize -AvailabilitySetId $applicationServerAvailabilitySet.Id
+$virtualMachineConfig = New-AzureRmVMConfig -VMName $machineName -VMSize $applicationServerSize
 $virtualMachineConfig = Set-AzureRmVMSourceImage -VM $virtualMachineConfig -PublisherName $imagePublisher -Offer $imageOffer -Skus $ubuntuOSSku -Version “latest”
 $virtualMachineConfig = Add-AzureRmVMNetworkInterface -VM $virtualMachineConfig -Id $networkInterface.Id
 $virtualMachineConfig = Set-AzureRmVMOSDisk -VM $virtualMachineConfig -Name $machineName -VhdUri $osDiskUri -CreateOption fromImage
