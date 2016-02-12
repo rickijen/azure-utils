@@ -36,7 +36,7 @@ if ($vnet -eq $null) {
     $gwsubnet=New-AzureRmVirtualNetworkSubnetConfig -Name GatewaySubnet -AddressPrefix 10.2.0.0/28
     New-AzureRmVirtualNetwork -Name $virtualNetworkName -ResourceGroupName $resourceGroupName -Location $location -AddressPrefix 10.2.0.0/16 -Subnet $frontendSubnet,$backendSubnet,$gwsubnet
     
-    $gwpip= New-AzureRmPublicIpAddress -Name vnet01gwpip1 -ResourceGroupName $resourceGroupName -Location $location -AllocationMethod Dynamic
+    $gwpip= New-AzureRmPublicIpAddress -Name vnet02gwpip1 -ResourceGroupName $resourceGroupName -Location $location -AllocationMethod Dynamic
 
     $vnet = Get-AzureRmVirtualNetwork -Name $virtualNetworkName -ResourceGroupName $resourceGroupName
     $gwsubnet = Get-AzureRmVirtualNetworkSubnetConfig -Name 'GatewaySubnet' -VirtualNetwork $vnet
