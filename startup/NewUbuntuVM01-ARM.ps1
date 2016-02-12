@@ -6,8 +6,8 @@
 $machineName = ‘rb02srv01’
 $resourceGroupName = ‘rb02’
 $location = ‘westus’
-$virtualNetworkName = ‘rb02-vnet’
-$networkSecurityGroupName = ‘rb02-nsg’
+$virtualNetworkName = ‘rb02-vnet01’
+$networkSecurityGroupName = ‘rb02-nsg01’
 #$applicationServerAvailabilitySetName = ‘rb-availability-set’
 $storageAccountname = ‘rb02storage’
 $applicationServerSize = ‘Basic_A2’
@@ -30,10 +30,18 @@ New-AzureRmAvailabilitySet -Name $applicationServerAvailabilitySetName -Resource
 # Virtual Network
 $vnet=Get-AzureRmVirtualNetwork -Name $virtualNetworkName -ResourceGroupName $resourceGroupName
 if ($vnet -eq $null) {
-    # Create a VNET with 2 Subnets
-    $frontendSubnet=New-AzureRmVirtualNetworkSubnetConfig -Name frontendSubnet -AddressPrefix 10.0.1.0/24
-    $backendSubnet=New-AzureRmVirtualNetworkSubnetConfig -Name backendSubnet -AddressPrefix 10.0.2.0/24
-    New-AzureRmVirtualNetwork -Name $virtualNetworkName -ResourceGroupName $resourceGroupName -Location $location -AddressPrefix 10.0.0.0/16 -Subnet $frontendSubnet,$backendSubnet
+    # Create a VNET with 2 Subnets and a GatewaySubnet
+    $frontendSubnet=New-AzureRmVirtualNetworkSubnetConfig -Name frontendSubnet -AddressPrefix 10.1.1.0/24
+    $backendSubnet=New-AzureRmVirtualNetworkSubnetConfig -Name backendSubnet -AddressPrefix 10.1.2.0/24
+    $gwsubnet=New-AzureRmVirtualNetworkSubnetConfig -Name GatewaySubnet -AddressPrefix 10.1.0.0/28
+    New-AzureRmVirtualNetwork -Name $virtualNetworkName -ResourceGroupName $resourceGroupName -Location $location -AddressPrefix 10.1.0.0/16 -Subnet $frontendSubnet,$backendSubnet,$gwsubnet
+    
+    $gwpip= New-AzureRmPublicIpAddress -Name vnet01gwpip1 -ResourceGroupName $resourceGroupName -Location $location -AllocationMethod Dynamic
+
+    $vnet = Get-AzureRmVirtualNetwork -Name $virtualNetworkName -ResourceGroupName $resourceGroupName
+    $gwsubnet = Get-AzureRmVirtualNetworkSubnetConfig -Name 'GatewaySubnet' -VirtualNetwork $vnet
+    $gwipconfig = New-AzureRmVirtualNetworkGatewayIpConfig -Name vnet01gwipconfig1 -SubnetId $gwsubnet.Id -PublicIpAddressId $gwpip.Id 
+    New-AzureRmVirtualNetworkGateway -Name vnet01gw -ResourceGroupName $resourceGroupName -Location $location -IpConfigurations $gwipconfig -GatewayType Vpn -VpnType RouteBased
 }
 
 # existing resources
