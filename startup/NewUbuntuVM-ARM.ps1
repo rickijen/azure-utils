@@ -1,5 +1,5 @@
 ﻿#
-# Create a new Ubuntu VM in ARM
+# Create a new Ubuntu VM in ARM, and create a gateway for VNET2VNET.
 #
 
 # Global variables
