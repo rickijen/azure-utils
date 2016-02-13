@@ -3,13 +3,13 @@
 #
 
 # Global variables
-$machineName = ‘rb02srv02’
-$resourceGroupName = ‘rb02’
-$location = ‘westus’
-$virtualNetworkName = ‘rb02-vnet02’
-$networkSecurityGroupName = ‘rb02-nsg02’
+$machineName = ‘rb03srv01’
+$resourceGroupName = ‘rb03’
+$location = ‘japaneast’
+$virtualNetworkName = ‘rb03-vnet01’
+#$networkSecurityGroupName = ‘rb02-nsg02’
 #$applicationServerAvailabilitySetName = ‘rb-availability-set’
-$storageAccountname = ‘rb02storage’
+$storageAccountname = ‘rb03storage’
 $applicationServerSize = ‘Basic_A2’
 $imagePublisher = ‘Canonical’
 $imageOffer = ‘UbuntuServer’
@@ -31,17 +31,17 @@ New-AzureRmAvailabilitySet -Name $applicationServerAvailabilitySetName -Resource
 $vnet=Get-AzureRmVirtualNetwork -Name $virtualNetworkName -ResourceGroupName $resourceGroupName
 if ($vnet -eq $null) {
     # Create a VNET with 2 Subnets and a GatewaySubnet
-    $frontendSubnet=New-AzureRmVirtualNetworkSubnetConfig -Name frontendSubnet -AddressPrefix 10.2.1.0/24
-    $backendSubnet=New-AzureRmVirtualNetworkSubnetConfig -Name backendSubnet -AddressPrefix 10.2.2.0/24
-    $gwsubnet=New-AzureRmVirtualNetworkSubnetConfig -Name GatewaySubnet -AddressPrefix 10.2.0.0/28
-    New-AzureRmVirtualNetwork -Name $virtualNetworkName -ResourceGroupName $resourceGroupName -Location $location -AddressPrefix 10.2.0.0/16 -Subnet $frontendSubnet,$backendSubnet,$gwsubnet
+    $frontendSubnet=New-AzureRmVirtualNetworkSubnetConfig -Name frontendSubnet -AddressPrefix 10.3.1.0/24
+    $backendSubnet=New-AzureRmVirtualNetworkSubnetConfig -Name backendSubnet -AddressPrefix 10.3.2.0/24
+    $gwsubnet=New-AzureRmVirtualNetworkSubnetConfig -Name GatewaySubnet -AddressPrefix 10.3.0.0/28
+    New-AzureRmVirtualNetwork -Name $virtualNetworkName -ResourceGroupName $resourceGroupName -Location $location -AddressPrefix 10.3.0.0/16 -Subnet $frontendSubnet,$backendSubnet,$gwsubnet
     
     $gwpip= New-AzureRmPublicIpAddress -Name vnet02gwpip1 -ResourceGroupName $resourceGroupName -Location $location -AllocationMethod Dynamic
 
     $vnet = Get-AzureRmVirtualNetwork -Name $virtualNetworkName -ResourceGroupName $resourceGroupName
     $gwsubnet = Get-AzureRmVirtualNetworkSubnetConfig -Name 'GatewaySubnet' -VirtualNetwork $vnet
-    $gwipconfig = New-AzureRmVirtualNetworkGatewayIpConfig -Name vnet02gwipconfig1 -SubnetId $gwsubnet.Id -PublicIpAddressId $gwpip.Id 
-    New-AzureRmVirtualNetworkGateway -Name vnet02gw -ResourceGroupName $resourceGroupName -Location $location -IpConfigurations $gwipconfig -GatewayType Vpn -VpnType RouteBased
+    $gwipconfig = New-AzureRmVirtualNetworkGatewayIpConfig -Name vnet03gwipconfig1 -SubnetId $gwsubnet.Id -PublicIpAddressId $gwpip.Id 
+    New-AzureRmVirtualNetworkGateway -Name vnet03gw -ResourceGroupName $resourceGroupName -Location $location -IpConfigurations $gwipconfig -GatewayType Vpn -VpnType RouteBased
 }
 
 # existing resources
@@ -89,9 +89,27 @@ New-AzureRmVM -ResourceGroupName $resourceGroupName -Location $location -VM $vir
 
 <# Create VNET2VNET gateways
 $vnetgw1 = Get-AzureRmVirtualNetworkGateway -Name vnet01gw -ResourceGroupName rb02
-$vnetgw2 = Get-AzureRmVirtualNetworkGateway -Name vnet02gw -ResourceGroupName rb02
-New-AzureRmVirtualNetworkGatewayConnection -Name conn1 -ResourceGroupName rb02 -VirtualNetworkGateway1 $vnetgw1 -VirtualNetworkGateway2 $vnetgw2 -Location 'West US' -ConnectionType Vnet2Vnet -SharedKey 'weiruf83458'
-$vnetgw1 = Get-AzureRmVirtualNetworkGateway -Name vnet02gw -ResourceGroupName rb02
+$vnetgw2 = Get-AzureRmVirtualNetworkGateway -Name vnet03gw -ResourceGroupName rb03
+New-AzureRmVirtualNetworkGatewayConnection -Name us2jp -ResourceGroupName rb02 -VirtualNetworkGateway1 $vnetgw1 -VirtualNetworkGateway2 $vnetgw2 -Location 'West US' -ConnectionType Vnet2Vnet -SharedKey 'weiruf83458'
+
+$vnetgw1 = Get-AzureRmVirtualNetworkGateway -Name vnet03gw -ResourceGroupName rb03
 $vnetgw2 = Get-AzureRmVirtualNetworkGateway -Name vnet01gw -ResourceGroupName rb02
-New-AzureRmVirtualNetworkGatewayConnection -Name conn2 -ResourceGroupName rb02 -VirtualNetworkGateway1 $vnetgw1 -VirtualNetworkGateway2 $vnetgw2 -Location 'West US' -ConnectionType Vnet2Vnet -SharedKey 'weiruf83458'
+New-AzureRmVirtualNetworkGatewayConnection -Name jp2us -ResourceGroupName rb03 -VirtualNetworkGateway1 $vnetgw1 -VirtualNetworkGateway2 $vnetgw2 -Location 'Japan East' -ConnectionType Vnet2Vnet -SharedKey 'weiruf83458'
+#>
+
+<#
+New-AzureRmRouteTable –Name "UDR-vnet2-vnet3" -ResourceGroupName rb02 –Location "West US"
+$rt = Get-AzureRmRouteTable –Name "UDR-vnet2-vnet3" -ResourceGroupName rb02
+Add-AzureRmRouteConfig -Name "vnet2tovnet3" -AddressPrefix "10.3.0.0/0" -NextHopType VirtualNetworkGateway -RouteTable $rt
+Set-AzureRmRouteTable -RouteTable $rt
+#>
+
+<# Create VNET2VNET gateways
+$vnetgw1 = Get-AzureRmVirtualNetworkGateway -Name vnet02gw -ResourceGroupName rb02
+$vnetgw2 = Get-AzureRmVirtualNetworkGateway -Name vnet03gw -ResourceGroupName rb03
+New-AzureRmVirtualNetworkGatewayConnection -Name us2jp2 -ResourceGroupName rb02 -VirtualNetworkGateway1 $vnetgw1 -VirtualNetworkGateway2 $vnetgw2 -Location 'West US' -ConnectionType Vnet2Vnet -SharedKey 'weiruf83458'
+
+$vnetgw1 = Get-AzureRmVirtualNetworkGateway -Name vnet03gw -ResourceGroupName rb03
+$vnetgw2 = Get-AzureRmVirtualNetworkGateway -Name vnet02gw -ResourceGroupName rb02
+New-AzureRmVirtualNetworkGatewayConnection -Name jp2us2 -ResourceGroupName rb03 -VirtualNetworkGateway1 $vnetgw1 -VirtualNetworkGateway2 $vnetgw2 -Location 'Japan East' -ConnectionType Vnet2Vnet -SharedKey 'weiruf83458'
 #>
