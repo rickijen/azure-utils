@@ -54,3 +54,25 @@ $nic = New-AzureRmNetworkInterface -Name $nicName -ResourceGroupName $rgName -Lo
 #$redondomcwNic | Set-AzureRmNetworkInterface -NetworkInterface $redondomcwNic -LoadBalancerBackendAddressPool $lb.BackendAddressPools[0] -LoadBalancerInboundNatRule $lb.InboundNatRules[0],$lb.InboundNatRules[1],$lb.InboundNatRules[2]
 
 
+
+#
+# Create additional frontend ip config to the frontend public IP pool
+#
+
+# create the LB
+$nrplb=New-AzureRmLoadBalancer -Name $LBName -ResourceGroupName $ResourceGroup -Location $location   
+   
+# create the VIP
+$vip1 = new-AzureRmPublicIpAddress -Name $VIPName1 -ResourceGroupName $ResourceGroup -Location $location -AllocationMethod Dynamic
+$vip2 = new-AzureRmPublicIpAddress -Name $VIPName2 -ResourceGroupName $ResourceGroup -Location $location -AllocationMethod Dynamic
+
+#Create the FrontendIpConfig
+$feIpConfig1 = new-AzureRmLoadBalancerFrontendIpConfig -Name $feName1 -PublicIpAddress $vip1
+$feIpConfig2 = new-AzureRmLoadBalancerFrontendIpConfig -Name $feName2 -PublicIpAddress $vip2 
+
+#add the FrontendIpConfig to the load balancer
+$feIpConfig1 = Get-AzureRmLoadBalancer -Name $LBName -ResourceGroupName $ResourceGroup | add-AzureRmLoadBalancerFrontendIpConfig -Name $feName1 -PublicIpAddress $vip1 |Set-AzureRmLoadBalancer
+$feIpConfig2 = Get-AzureRmLoadBalancer -Name $LBName -ResourceGroupName $ResourceGroup | add-AzureRmLoadBalancerFrontendIpConfig -Name $feName2 -PublicIpAddress $vip2 |Set-AzureRmLoadBalancer 
+
+
+
