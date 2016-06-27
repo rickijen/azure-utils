@@ -1,5 +1,5 @@
 ﻿#
-# Create a new Ubuntu VM in ARM
+# Create a new Palo Alto VM in ARM
 #
 
 # Global variables
@@ -46,8 +46,8 @@ $virtualMachineConfig = Add-AzureRmVMNetworkInterface -VM $virtualMachineConfig 
 $virtualMachineConfig = Add-AzureRmVMNetworkInterface -VM $virtualMachineConfig -Id $networkInterface1.Id
 $virtualMachineConfig = Add-AzureRmVMNetworkInterface -VM $virtualMachineConfig -Id $networkInterface2.Id
 $virtualMachineConfig = Set-AzureRmVMOSDisk -VM $virtualMachineConfig -Name $machineName -VhdUri $osDiskUri -CreateOption fromImage
-# $virtualMachineConfig = Set-AzureRmVMOperatingSystem -VM $virtualMachineConfig -Linux -ComputerName $machineName
 
+# set the plan since it's a marketplace image
 Set-AzureRmVMPlan -VM $virtualMachineConfig -Name $Sku -Product $imageOffer -Publisher $imagePublisher
 
 $virtualMachineConfig.OSProfile = $osProfile
