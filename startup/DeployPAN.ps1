@@ -45,8 +45,6 @@ $virtualMachineConfig = Set-AzureRmVMOSDisk -VM $virtualMachineConfig -Name $mac
 # set the plan since it's a marketplace image
 Set-AzureRmVMPlan -VM $virtualMachineConfig -Name $Sku -Product $imageOffer -Publisher $imagePublisher
 
-#$virtualMachineConfig.OSProfile = $osProfile
-
 #Enter a new user name and password in the pop-up for the following
 $cred = Get-Credential -Message "Type the user name and password of the PAN (Linux) VM."
 
