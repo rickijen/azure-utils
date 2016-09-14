@@ -7,6 +7,7 @@ $machineName = "ASR-CiscoASAv-03"
 $resourceGroupName = "EpicorWestASR-ARM"
 $location = "West US"
 $virtualNetworkName = "EpicorFailoverARM"
+$avSetName="availSetASAv"
 # Use Standard storage account, not Premium.
 $storageAccountname = "epicorasrcasav"
 $vmSize = "Standard_D3"
@@ -33,22 +34,20 @@ $networkInterface3 = New-AzureRmNetworkInterface -Name "asav03NicInfra" -Resourc
 
 # Prepare OS Disk
 $diskName="OSDisk"
-#$osDiskUri = $storageAccount.PrimaryEndpoints.Blob.ToString() + “vhds/” + $machineName + $diskName + “.vhd”
+$osDiskUri = $storageAccount.PrimaryEndpoints.Blob.ToString() + “vhds/” + $machineName + $diskName + “.vhd”
 
-#https://epicorasrcasav.blob.core.windows.net/vhds/ASR-CiscoASAv-01OSDisk.vhd
-
-# Let's see if we can reuse the vhd in order to save time to apply Cisco license.
-$oldMachineName="ASR-CiscoASAv-03"
-$osDiskUri = $storageAccount.PrimaryEndpoints.Blob.ToString() + “vhds/” + $oldMachineName + $diskName + “.vhd”
+#Attach the VM to an Availability Set so it can be attached to Azure LB
+$avSet=New-AzureRmAvailabilitySet -Name $avSetName -ResourceGroupName $resourceGroupName -Location $location
 
 # New VM config
-$virtualMachineConfig = New-AzureRmVMConfig -VMName $machineName -VMSize $vmSize
+$virtualMachineConfig = New-AzureRmVMConfig -VMName $machineName -VMSize $vmSize -AvailabilitySetId $avSet.Id
 $virtualMachineConfig = Set-AzureRmVMSourceImage -VM $virtualMachineConfig -PublisherName $imagePublisher -Offer $imageOffer -Skus $Sku -Version "latest"
 $virtualMachineConfig = Add-AzureRmVMNetworkInterface -VM $virtualMachineConfig -Id $networkInterface0.Id -Primary
 $virtualMachineConfig = Add-AzureRmVMNetworkInterface -VM $virtualMachineConfig -Id $networkInterface1.Id
 $virtualMachineConfig = Add-AzureRmVMNetworkInterface -VM $virtualMachineConfig -Id $networkInterface2.Id
 $virtualMachineConfig = Add-AzureRmVMNetworkInterface -VM $virtualMachineConfig -Id $networkInterface3.Id
 $virtualMachineConfig = Set-AzureRmVMOSDisk -VM $virtualMachineConfig -Name $machineName -VhdUri $osDiskUri -CreateOption fromImage
+
 #$virtualMachineConfig = Set-AzureRmVMOSDisk -VM $virtualMachineConfig -Name $machineName -VhdUri $OSDiskUri -Caching ReadWrite -CreateOption attach 
 
 # set the plan since it's a marketplace image
