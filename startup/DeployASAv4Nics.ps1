@@ -1,4 +1,4 @@
-﻿#
+#
 # Create a new Cisco ASAv VM in ARM
 #
 

@@ -1,4 +1,4 @@
-﻿#
+#
 # Create a new Palo Alto VM in ARM
 #
 
