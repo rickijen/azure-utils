@@ -3,7 +3,7 @@
 #
 
 # Global variables
-$machineName = "UbuntuNATGW"
+$machineName = "UbuntuNATGW2"
 $resourceGroupName = "technicolor"
 $location = "West US"
 $virtualNetworkName = "vnet001"
@@ -23,12 +23,12 @@ $Sku = "14.04.4-LTS"
 $virtualNetwork = Get-AzureRmVirtualNetwork -Name $virtualNetworkName -ResourceGroupName $resourceGroupName
 $storageAccount = Get-AzureRmStorageAccount -ResourceGroupName $resourceGroupName -Name $storageAccountname
 
-# create 1 new public IP & 2 nics
-# 2 subnets for ASAv have to be created prior to running the following and the Subnet ID has to match
+# create 1 new public IP & 2 nics, each nic on a separate subnet
+# 2 subnets for NAT GW have to be created prior to running the following and the Subnet ID has to match
 #
-$publicIpAddress = New-AzureRmPublicIpAddress -ResourceGroupName $resourceGroupName -AllocationMethod Static -Name $machineName -Location $location -DomainNameLabel "ubuntunatgwpublicip"
-$networkInterface0 = New-AzureRmNetworkInterface -Name "frontNic" -ResourceGroupName $resourceGroupName -Location $location -SubnetId $virtualNetwork.Subnets[0].Id -PublicIpAddressId $publicIpAddress.Id
-$networkInterface1 = New-AzureRmNetworkInterface -Name "backNic" -ResourceGroupName $resourceGroupName -Location $location -SubnetId $virtualNetwork.Subnets[1].Id
+$publicIpAddress = New-AzureRmPublicIpAddress -ResourceGroupName $resourceGroupName -AllocationMethod Static -Name $machineName -Location $location -DomainNameLabel "ubuntunatgwtwopublicip"
+$networkInterface0 = New-AzureRmNetworkInterface -Name "2frontNic" -ResourceGroupName $resourceGroupName -Location $location -SubnetId $virtualNetwork.Subnets[0].Id -PublicIpAddressId $publicIpAddress.Id
+$networkInterface1 = New-AzureRmNetworkInterface -Name "2backNic" -ResourceGroupName $resourceGroupName -Location $location -SubnetId $virtualNetwork.Subnets[2].Id
 
 # Prepare OS Disk
 $diskName="OSDisk"
