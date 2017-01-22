@@ -1,0 +1,362 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "virtualMachines_CSR_B_adminPassword": {
+            "type": "secureString",
+            "defaultValue": null
+        },
+        "virtualMachines_CSR_B_name": {
+            "type": "string",
+            "defaultValue": "CSR-B"
+        },
+        "networkInterfaces_CSR_B_Nic0_name": {
+            "type": "string",
+            "defaultValue": "CSR-B-Nic0"
+        },
+        "networkInterfaces_CSR_B_Nic1_name": {
+            "type": "string",
+            "defaultValue": "CSR-B-Nic1"
+        },
+        "networkSecurityGroups_CSR_B_SSH_SecurityGroup_name": {
+            "type": "string",
+            "defaultValue": "CSR-B-SSH-SecurityGroup"
+        },
+        "publicIPAddresses_rb01publicIp02_name": {
+            "type": "string",
+            "defaultValue": "rb01publicIp02"
+        },
+        "routeTables_privatesubnet_CSR_RouteTable_name": {
+            "type": "string",
+            "defaultValue": "privatesubnet-CSR-RouteTable"
+        },
+        "routeTables_publicsubnet_CSR_RouteTable_name": {
+            "type": "string",
+            "defaultValue": "publicsubnet-CSR-RouteTable"
+        },
+        "routeTables_privatesubnet_CSR_RouteTable2_name": {
+            "type": "string",
+            "defaultValue": "privatesubnet-CSR-RouteTable2"
+        },
+        "routeTables_publicsubnet_CSR_RouteTable2_name": {
+            "type": "string",
+            "defaultValue": "publicsubnet-CSR-RouteTable2"
+        },
+        "virtualNetworks_vnet01_name": {
+            "type": "string",
+            "defaultValue": "vnet01"
+        },
+        "storageAccounts_rb01storage_name": {
+            "type": "string",
+            "defaultValue": "rb01storage"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "comments": "Generalized from resource: /subscriptions/c65cf1c8-ceb7-4e78-95db-a45259984db7/resourceGroups/rb01/providers/Microsoft.Compute/virtualMachines/CSR-B",
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[parameters('virtualMachines_CSR_B_name')]",
+            "apiVersion": "2015-06-15",
+            "location": "westus",
+            "plan": {
+                "name": "csr-azure-byol",
+                "publisher": "cisco",
+                "product": "cisco-csr-1000v"
+            },
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "Standard_D2"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "cisco",
+                        "offer": "cisco-csr-1000v",
+                        "sku": "csr-azure-byol",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "name": "[concat(parameters('virtualMachines_CSR_B_name'),'-disk')]",
+                        "createOption": "FromImage",
+                        "vhd": {
+                            "uri": "[concat('http', '://', parameters('storageAccounts_rb01storage_name'), '.blob.core.windows.net', concat('/vhds/', parameters('virtualMachines_CSR_B_name'),'-disk-tfct44aqjwnw2.vhd'))]"
+                        },
+                        "caching": "ReadWrite"
+                    },
+                    "dataDisks": []
+                },
+                "osProfile": {
+                    "computerName": "[parameters('virtualMachines_CSR_B_name')]",
+                    "adminUsername": "weswes",
+                    "linuxConfiguration": {
+                        "disablePasswordAuthentication": false
+                    },
+                    "secrets": [],
+                    "adminPassword": "[parameters('virtualMachines_CSR_B_adminPassword')]"
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "properties": {
+                                "primary": true
+                            },
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_CSR_B_Nic0_name'))]"
+                        },
+                        {
+                            "properties": {
+                                "primary": false
+                            },
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_CSR_B_Nic1_name'))]"
+                        }
+                    ]
+                }
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_rb01storage_name'))]",
+                "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_CSR_B_Nic0_name'))]",
+                "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_CSR_B_Nic1_name'))]"
+            ]
+        },
+        {
+            "comments": "Generalized from resource: /subscriptions/c65cf1c8-ceb7-4e78-95db-a45259984db7/resourceGroups/rb01/providers/Microsoft.Network/networkInterfaces/CSR-B-Nic0",
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[parameters('networkInterfaces_CSR_B_Nic0_name')]",
+            "apiVersion": "2015-06-15",
+            "location": "westus",
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAddress": "10.0.2.4",
+                            "privateIPAllocationMethod": "Static",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_rb01publicIp02_name'))]"
+                            },
+                            "subnet": {
+                                "id": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_vnet01_name')), '/subnets/publicsubnet2')]"
+                            }
+                        }
+                    }
+                ],
+                "dnsSettings": {
+                    "dnsServers": []
+                },
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_CSR_B_SSH_SecurityGroup_name'))]"
+                }
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_rb01publicIp02_name'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_vnet01_name'))]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_CSR_B_SSH_SecurityGroup_name'))]"
+            ]
+        },
+        {
+            "comments": "Generalized from resource: /subscriptions/c65cf1c8-ceb7-4e78-95db-a45259984db7/resourceGroups/rb01/providers/Microsoft.Network/networkInterfaces/CSR-B-Nic1",
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[parameters('networkInterfaces_CSR_B_Nic1_name')]",
+            "apiVersion": "2015-06-15",
+            "location": "westus",
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAddress": "10.0.3.4",
+                            "privateIPAllocationMethod": "Static",
+                            "subnet": {
+                                "id": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_vnet01_name')), '/subnets/privatesubnet2')]"
+                            }
+                        }
+                    }
+                ],
+                "dnsSettings": {
+                    "dnsServers": []
+                }
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_vnet01_name'))]"
+            ]
+        },
+        {
+            "comments": "Generalized from resource: /subscriptions/c65cf1c8-ceb7-4e78-95db-a45259984db7/resourceGroups/rb01/providers/Microsoft.Network/networkSecurityGroups/CSR-B-SSH-SecurityGroup",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[parameters('networkSecurityGroups_CSR_B_SSH_SecurityGroup_name')]",
+            "apiVersion": "2015-06-15",
+            "location": "westus",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "SSH-Rule",
+                        "properties": {
+                            "description": "Allow SSH",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "sourceAddressPrefix": "Internet",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 100,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "UDP-Rule1",
+                        "properties": {
+                            "description": "Allow UDP",
+                            "protocol": "UDP",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "500",
+                            "sourceAddressPrefix": "Internet",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 101,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "UDP-Rule2",
+                        "properties": {
+                            "description": "Allow UDP",
+                            "protocol": "UDP",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "4500",
+                            "sourceAddressPrefix": "Internet",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 102,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "comments": "Generalized from resource: /subscriptions/c65cf1c8-ceb7-4e78-95db-a45259984db7/resourceGroups/rb01/providers/Microsoft.Network/publicIPAddresses/rb01publicIp02",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[parameters('publicIPAddresses_rb01publicIp02_name')]",
+            "apiVersion": "2015-06-15",
+            "location": "westus",
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic",
+                "idleTimeoutInMinutes": 4,
+                "dnsSettings": {
+                    "domainNameLabel": "csr-b"
+                }
+            }
+        },
+        {
+            "comments": "Generalized from resource: /subscriptions/c65cf1c8-ceb7-4e78-95db-a45259984db7/resourceGroups/rb01/providers/Microsoft.Network/routeTables/privatesubnet-CSR-RouteTable2",
+            "type": "Microsoft.Network/routeTables",
+            "name": "[parameters('routeTables_privatesubnet_CSR_RouteTable2_name')]",
+            "apiVersion": "2015-06-15",
+            "location": "westus",
+            "properties": {
+                "routes": [
+                    {
+                        "name": "Route-Subnet1-To-CSR",
+                        "properties": {
+                            "addressPrefix": "10.0.2.0/24",
+                            "nextHopType": "VirtualAppliance",
+                            "nextHopIpAddress": "10.0.3.4"
+                        }
+                    },
+                    {
+                        "name": "Default-Route-To-CSR",
+                        "properties": {
+                            "addressPrefix": "0.0.0.0/0",
+                            "nextHopType": "VirtualAppliance",
+                            "nextHopIpAddress": "10.0.3.4"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "comments": "Generalized from resource: /subscriptions/c65cf1c8-ceb7-4e78-95db-a45259984db7/resourceGroups/rb01/providers/Microsoft.Network/routeTables/publicsubnet-CSR-RouteTable2",
+            "type": "Microsoft.Network/routeTables",
+            "name": "[parameters('routeTables_publicsubnet_CSR_RouteTable2_name')]",
+            "apiVersion": "2015-06-15",
+            "location": "westus",
+            "properties": {
+                "routes": [
+                    {
+                        "name": "Route-Subnet2-To-CSR",
+                        "properties": {
+                            "addressPrefix": "10.0.3.0/24",
+                            "nextHopType": "VirtualAppliance",
+                            "nextHopIpAddress": "10.0.2.4"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "comments": "Generalized from resource: /subscriptions/c65cf1c8-ceb7-4e78-95db-a45259984db7/resourceGroups/rb01/providers/Microsoft.Network/virtualNetworks/vnet01",
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[parameters('virtualNetworks_vnet01_name')]",
+            "apiVersion": "2015-06-15",
+            "location": "westus",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "10.0.0.0/16"
+                    ]
+                },
+                "subnets": [
+                   {
+                        "name": "publicsubnet",
+                        "properties": {
+                            "addressPrefix": "10.0.0.0/24",
+                            "routeTable": {
+                                "id": "[resourceId('Microsoft.Network/routeTables', parameters('routeTables_publicsubnet_CSR_RouteTable_name'))]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "privatesubnet",
+                        "properties": {
+                            "addressPrefix": "10.0.1.0/24",
+                            "routeTable": {
+                                "id": "[resourceId('Microsoft.Network/routeTables', parameters('routeTables_privatesubnet_CSR_RouteTable_name'))]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "publicsubnet2",
+                        "properties": {
+                            "addressPrefix": "10.0.2.0/24",
+                            "routeTable": {
+                                "id": "[resourceId('Microsoft.Network/routeTables', parameters('routeTables_publicsubnet_CSR_RouteTable2_name'))]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "privatesubnet2",
+                        "properties": {
+                            "addressPrefix": "10.0.3.0/24",
+                            "routeTable": {
+                                "id": "[resourceId('Microsoft.Network/routeTables', parameters('routeTables_privatesubnet_CSR_RouteTable2_name'))]"
+                            }
+                        }
+                    }
+                ]
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/routeTables', parameters('routeTables_publicsubnet_CSR_RouteTable2_name'))]",
+                "[resourceId('Microsoft.Network/routeTables', parameters('routeTables_privatesubnet_CSR_RouteTable2_name'))]"
+            ]
+        },
+        {
+            "comments": "Generalized from resource: /subscriptions/c65cf1c8-ceb7-4e78-95db-a45259984db7/resourceGroups/rb01/providers/Microsoft.Storage/storageAccounts/rb01storage",
+            "type": "Microsoft.Storage/storageAccounts",
+            "name": "[parameters('storageAccounts_rb01storage_name')]",
+            "apiVersion": "2015-06-15",
+            "location": "westus",
+            "properties": {
+                "accountType": "Standard_LRS"
+            }
+        }
+    ]
+}
