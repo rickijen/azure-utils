@@ -15,10 +15,6 @@ $imagePublisher = "cisco"
 $imageOffer = "cisco-asav"
 $Sku = "asav-azure-byol"
 
-# sample username & password
-# agnadmin
-# K8y738ggQ9930p
-
 # existing resources
 $virtualNetwork = Get-AzureRmVirtualNetwork -Name $virtualNetworkName -ResourceGroupName $resourceGroupName
 $storageAccount = Get-AzureRmStorageAccount -ResourceGroupName $resourceGroupName -Name $storageAccountname
