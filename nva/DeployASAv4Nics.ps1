@@ -4,7 +4,7 @@
 
 # Global variables
 $machineName = "ASR-CiscoASAv-03"
-$resourceGroupName = "EpicorWestASR-ARM"
+$resourceGroupName = "WestASR-ARM"
 $location = "West US"
 $virtualNetworkName = "EpicorFailoverARM"
 $avSetName="availSetASAv"

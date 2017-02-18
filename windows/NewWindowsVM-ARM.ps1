@@ -1,4 +1,4 @@
-﻿#
+#
 # New Windows Server 2012 R2 Datacenter in ARM
 #
 
@@ -19,7 +19,7 @@ if (!$testResult) {
 }
 
 # Create new Load Balancer set
-<#
+#
 #>
 
 # Virtual Network
