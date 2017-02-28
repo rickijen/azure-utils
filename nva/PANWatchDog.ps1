@@ -3,16 +3,16 @@
 #
 # Global variables
 #
-$sub="7f4k99e6-2fda-4486-b5c4-66yw728a9f86"
-$resourceGroup="redondo2"
-$virtualNetwork="redondo2"
-$User="ApplicationID@somedomain.onmicrosoft.com"
-$Password="xxxxxxxxxx"
-$Pan1NicPrivateIP="10.0.0.4"
+#$sub="7f4k99e6-2fda-4486-b5c4-66yw728a9f86"
+$resourceGroup="rb09"
+$virtualNetwork="rb09-vnet"
+#$User="ApplicationID@somedomain.onmicrosoft.com"
+#$Password="xxxxxxxxxx"
+$Pan1NicPrivateIP="192.168.0.4"
 $Pan1NicPort=80
-$Pan2NicPrivateIP="10.0.0.5"
+$Pan2NicPrivateIP="192.168.0.5"
 $Pan2NicPort=80
-$rtName="TestRouteTable"
+$rtName="TestUDR"
 $rtCfgName="RouteToPAN"
 $AddressPrefix="0.0.0.0/0"
 $NextHopType="VirtualAppliance"
@@ -20,34 +20,28 @@ $NextHopType="VirtualAppliance"
 #
 # Azure Authentication methods:
 # 1. login with a user account without Multi-Factor Authentication
-# 2. login with an AAD Service Principal: https://blogs.endjin.com/2016/01/azure-resource-manager-authentication-from-a-powershell-script/
+# 2. login with an AAD Service Principal: https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-authenticate-service-principal
 #
 # $app = New-AzureRmADApplication -DisplayName "PANWatchDog" -IdentifierUris "http://redondoazurefunctions2.azurewebsites.net/" -Password SomePassWord
 # New-AzureRmADServicePrincipal -ApplicationId $app.ApplicationId
 # Start-Sleep 15
 # New-AzureRmRoleAssignment -RoleDefinitionName Contributor -ServicePrincipalName $app.ApplicationId
 #
-# $pass = ConvertTo-SecureString "<Your Password>" -AsPlainText â€“Force
-# $cred = New-Object -TypeName pscredential â€“ArgumentList 45ac0315-8e43-48d4-b235-cd11ec9c3305@rickijengmail.onmicrosoft.com, $pass
-# Login-AzureRmAccount -Credential $cred -ServicePrincipal â€“TenantId 4f813308-71b6-4e90-b5db-fa6070c6de3e
-#
 
-$SecurePassword = $Password | ConvertTo-SecureString -AsPlainText -Force
-$UserCred = New-Object System.Management.Automation.PSCredential ($User, $SecurePassword)
-Login-Azurermaccount -Credential $UserCred -SubscriptionId $sub
+$pass = ConvertTo-SecureString "xxxxxxxxxxxxx" -AsPlainText –Force
+$cred = New-Object -TypeName pscredential –ArgumentList xxxxxxxx-ac93-4014-a595-f62503f99db5,$pass
+Login-AzureRmAccount -Credential $cred -ServicePrincipal -TenantId xxxxxxxx-86f1-41af-91ab-2d7cd011db47
 
 #
 # Test TCP connection to the Private NIC of PAN and update UDR if necessary
 #
-$t = New-Object Net.Sockets.TcpClient
-$t.Connect($Pan1NicPrivateIP,$Pan1NicPort)
-if($t.Connected)
+Try
 {
-    $t.Close()
-    "PAN at $Pan1NicPrivateIP port $Pan1NicPort is operational"
-    exit;
+    "Test TCP connection to PAN at $Pan1NicPrivateIP port $Pan1NicPort started:$(get-date)"
+    $t = New-Object Net.Sockets.TcpClient
+    $t.Connect($Pan1NicPrivateIP,$Pan1NicPort)
 }
-else
+Catch
 {
     "Can't reach PAN at $Pan1NicPrivateIP port $Pan1NicPort"
 
@@ -56,14 +50,10 @@ else
     $rtCfg=Get-AzureRmRouteConfig -RouteTable $routeTable -Name $rtCfgName
     Set-AzureRmRouteConfig -RouteTable $routeTable -Name $rtCfgName -AddressPrefix $AddressPrefix -NextHopType $NextHopType -NextHopIpAddress $Pan2NicPrivateIP
     Set-AzureRmRouteTable -RouteTable $routeTable
-    if (!$LASTEXITCODE)
-    {
-        "Route table updated.";
-    }
-    else
-    {
-        "Failed to update Route table.";
-    }
-
-    exit;
+    "Route table updated"
+}
+Finally
+{
+    $t.Close()
+    "Test TCP connection to PAN at $Pan1NicPrivateIP port $Pan1NicPort completed: $(get-date)"
 }
