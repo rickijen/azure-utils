@@ -10,7 +10,7 @@ Login-AzureRmAccount
 #
 $tgresourceGroupName = "ASM-POC"
 $tgvirtualNetworkName = "VNet-NonProd"
-$tgSubnetName = "frontend"
+$tgSubnetName = "backend"
 $tgPublicSubnetName = "public"
 $tgVNet = Get-AzureRmVirtualNetwork -Name $tgvirtualNetworkName -ResourceGroupName $tgresourceGroupName
 
@@ -19,26 +19,28 @@ $tgVNet = Get-AzureRmVirtualNetwork -Name $tgvirtualNetworkName -ResourceGroupNa
 # #Get-AzureRmVMImageSku -Location westus -PublisherName cisco -Offer cisco-csr-1000v
 #
 $rgCSR = "rg-uw-network-csr-nonprod"
-$location = "West US"
-$rgAS = "rg-uw-network-csr-nonprod"
 $avSetName = "as-uw-network-csr-nonprod"
-$machineName = "UWNETCSRNP01"
-$storageAccountname = "asuwvmnetcsr01nonprod"
-$routeTableName = "vnet-uw-public-nonprod-CSR-RouteTable"
+$machineName = "UWNETCSRNP02"
+$storageAccountname = "asuwvmnetcsr02nonprod"
+$location = "West US"
+$routeTableName = "vnet-uw-frontend-nonprod-CSR-RouteTable"
 $routeTableCfgName = "Route-To-CSR"
 $onPremPrefix = "10.200.8.0/21"
+
 # Size and Sku
 $vmSize = "Standard_D2_v2"
 $imagePublisher = "cisco"
 $imageOffer = "cisco-csr-1000v"
 $Sku = "16_5"
 
+### HERE WE GO ###
 
 # Create new resource group for CSR
 New-AzureRmResourceGroup -Name $rgCSR -Location $location
 
 # Make sure Availability set is created
-$avSet=New-AzureRmAvailabilitySet -ResourceGroupName $rgAS -Name $avSetName -Location $location
+New-AzureRmAvailabilitySet -ResourceGroupName $rgCSR -Name $avSetName -Location $location
+$avSet = Get-AzureRmAvailabilitySet -ResourceGroupName $rgCSR -Name $avSetName
 
 # Create static public IP for CSR
 $publicIpAddress = New-AzureRmPublicIpAddress `
