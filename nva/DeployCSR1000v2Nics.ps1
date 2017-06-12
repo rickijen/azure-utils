@@ -10,20 +10,21 @@ Login-AzureRmAccount
 #
 $tgresourceGroupName = "ASM-POC"
 $tgvirtualNetworkName = "VNet-NonProd"
-$tgSubnetName = "frontend"
+$tgSubnetName = "backend"
+$tgPublicSubnetName = "public"
 $tgVNet = Get-AzureRmVirtualNetwork -Name $tgvirtualNetworkName -ResourceGroupName $tgresourceGroupName
 
 #
 # CSR environment (the resource group contains the CSR resources: VM, SA, NICs, NSG, UDR, etc.)
 # #Get-AzureRmVMImageSku -Location westus -PublisherName cisco -Offer cisco-csr-1000v
 #
-$rgCSR="csrv05"
+$rgCSR="rg-uw-network-csr-nonprod2"
 $location="West US"
-$avSetName="as-uw-network-csr-prod"
-$machineName = "UWNETCSRP01"
+$rgAS="rg-uw-network-csr-nonprod"
+$avSetName="as-uw-network-csr-nonprod"
+$machineName = "UWNETCSRNP02"
 $nic0name = "Nic-0"
 $nic1name = "Nic-1"
-$storageAccountname = "sacsrv05"
 $vmSize = "Standard_D2_v2"
 $imagePublisher = "cisco"
 $imageOffer = "cisco-csr-1000v"
@@ -36,37 +37,37 @@ $routeTableCfgName="Route-To-DMVPN"
 New-AzureRmResourceGroup -Name $rgCSR -Location $location
 
 # Make sure Availability set is created
-$avSet=New-AzureRmAvailabilitySet -ResourceGroupName $rgCSR -Name $avSetName -Location $location
+$avSet=New-AzureRmAvailabilitySet -ResourceGroupName $rgAS -Name $avSetName -Location $location
 
 # Create static public IP for CSR
 $publicIpAddress = New-AzureRmPublicIpAddress `
-    -ResourceGroupName $rgCSR `
-    -AllocationMethod Static `
-    -Name $machineName `
-    -Location $location `
-    -DomainNameLabel $machineName
+    -ResourceGroupName $rgCSR -AllocationMethod Static `
+    -Name $machineName -Location $location `
+    -DomainNameLabel $machineName.ToLower()
 
-# Create 2 NICs
-# Confirm the Subnet Index (by printing $tgVNet) first before executing the following
+#
+# Create 2 NICs and attach to the subnets
+#
+$tgSubnet = $tgVNet.Subnets | Where-Object Name -eq $tgSubnetName
+$tgPublicSubnet = $tgVNet.Subnets | Where-Object Name -eq $tgPublicSubnetName
+
 $nic0 = New-AzureRmNetworkInterface `
-    -Name $nic0name `
-    -ResourceGroupName $rgCSR `
-    -Location $location `
-    -SubnetId $tgVNet.Subnets[2].Id `
+    -Name $nic0name -ResourceGroupName $rgCSR `
+    -Location $location -SubnetId $tgPublicSubnet.Id `
     -EnableIPForwarding `
     -PublicIpAddressId $publicIpAddress.Id
 $nic1 = New-AzureRmNetworkInterface `
-    -Name $nic1name `
-    -ResourceGroupName $rgCSR `
-    -Location $location `
-    -SubnetId $tgVNet.Subnets[0].Id `
+    -Name $nic1name -ResourceGroupName $rgCSR `
+    -Location $location -SubnetId $tgSubnet.Id `
     -EnableIPForwarding
 
 # Create Storage account for CSR
-$storageAccount = New-AzureRmStorageAccount -ResourceGroupName $rgCSR -SkuName Standard_LRS -Name $storageAccountname -Location $location
+$storageAccount = New-AzureRmStorageAccount `
+    -ResourceGroupName $rgCSR -SkuName Standard_LRS `
+    -Name $machineName.ToLower() -Location $location
 
 # Prepare OS Disk URI
-$osDiskUri = $storageAccount.PrimaryEndpoints.Blob.ToString() + "vhds/" + $machineName + "OSDisk" + ".vhd"
+$osDiskUri = $storageAccount.PrimaryEndpoints.Blob.ToString() + "vhds/" + $machineName.ToLower() + "OSDisk" + ".vhd"
 
 # Construct CSR VM config
 $virtualMachineConfig = New-AzureRmVMConfig -VMName $machineName -VMSize $vmSize -AvailabilitySetId $avSet.Id
@@ -128,10 +129,8 @@ $routeTable | Add-AzureRmRouteConfig `
     | Set-AzureRmRouteTable
 
 #Associate UDR to the correct subnet
-$Subnet = $vnet.Subnets | Where-Object Name -eq $tgSubnetName
+$Subnet = $tgVNet.Subnets | Where-Object Name -eq $tgSubnetName
 Set-AzureRmVirtualNetworkSubnetConfig `
-    -VirtualNetwork $tgVNet `
-    -Name $tgSubnetName `
-    -AddressPrefix $Subnet.AddressPrefix `
-    -RouteTableId $routeTable.Id `
+    -VirtualNetwork $tgVNet -Name $tgSubnetName `
+    -AddressPrefix $Subnet.AddressPrefix -RouteTableId $routeTable.Id `
     | Set-AzureRmVirtualNetwork
