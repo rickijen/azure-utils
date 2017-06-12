@@ -38,7 +38,7 @@ $Sku = "16_5"
 # Create new resource group for CSR
 New-AzureRmResourceGroup -Name $rgCSR -Location $location
 
-# Make sure Availability set is created
+# Make sure Availability set is created, both CSRs in the AV Set have to be in the same resource group
 New-AzureRmAvailabilitySet -ResourceGroupName $rgCSR -Name $avSetName -Location $location
 $avSet = Get-AzureRmAvailabilitySet -ResourceGroupName $rgCSR -Name $avSetName
 
