@@ -6,7 +6,6 @@
 # Target environment
 #
 $tgresourceGroupName = "ASM-POC"
-$tglocation = "West US"
 $tgvirtualNetworkName = "VNet-NonProd"
 
 # Target VNet
@@ -20,7 +19,6 @@ $location="West US"
 $avSetName="as-uw-network-csr-prod"
 $machineName = "UWNETCSRP01"
 $storageAccountname = "sacsrv05"
-$storageAccounSkuName = "Standard_LRS"
 $vmSize = "Standard_D2_v2"
 $imagePublisher = "cisco"
 $imageOffer = "cisco-csr-1000v"

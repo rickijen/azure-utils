@@ -1,0 +1,46 @@
+$subscriptionId = 'c65cf1c8-ceb7-4e78-95db-a45259984db7'
+$resourceGroupName = "NetworkWatcherRG"
+$networkWatcherName = "NetworkWatcher_westus"
+$packetCaptureName = "TestPacketCapture5"
+$storageaccountname = "rb09diagnostics"
+$vmName = "dockerHost01"
+$bytestoCaptureperPacket = "0"
+$bytesPerSession = "1073741824"
+$captureTimeinSeconds = "60"
+$localIP = ""
+$localPort = "" # Examples are: 80, or 80-120
+$remoteIP = ""
+$remotePort = "" # Examples are: 80, or 80-120
+$protocol = "" # Valid values are TCP, UDP and Any.
+$targetUri = "/subscriptions/c65cf1c8-ceb7-4e78-95db-a45259984db7/resourceGroups/rb09/providers/Microsoft.Compute/virtualMachines/dockerHost01"
+$storageId = "/subscriptions/c65cf1c8-ceb7-4e78-95db-a45259984db7/resourceGroups/rb09/providers/Microsoft.Storage/storageAccounts/rb09diagnostics/mycaptures.cap" # Example: "https://mytestaccountname.blob.core.windows.net/capture/vm1Capture.cap"
+$storagePath = ""
+$localFilePath = "c:\\packetcapture.cap" # Example: "d:\capture\vm1Capture.cap"
+
+$requestBody = @"
+{
+    'properties':  {
+                       'target':  '/${targetUri}',
+                       'bytesToCapturePerPacket':  '${bytestoCaptureperPacket}',
+                       'totalBytesPerSession':  '${bytesPerSession}',
+                       'timeLimitinSeconds':  '${captureTimeinSeconds}',
+                       'storageLocation':  {
+                                               'storageId':  '${storageId}',
+                                               'storagePath':  '${storagePath}',
+                                               'filePath':  '${localFilePath}'
+                                           },
+                       'filters':  [
+                                       {
+                                           'protocol':  '${protocol}',
+                                           'localIPAddress':  '${localIP}',
+                                           'localPort':  '${localPort}',
+                                           'remoteIPAddress':  '${remoteIP}',
+                                           'remotePort':  '${remotePort}'
+                                       }
+                                   ]
+                   }
+}
+"@
+
+armclient PUT "https://management.azure.com/subscriptions/${subscriptionId}/ResourceGroups/${resourceGroupName}/providers/Microsoft.Network/networkWatchers/${networkWatcherName}/packetCaptures/${packetCaptureName}?api-version=2016-07-01" $requestbody
+
