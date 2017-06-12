@@ -9,7 +9,7 @@ Login-AzureRmAccount
 # Target VNet & Subnet where we will attach the CSR NICs (in prod or non-prod resource groups)
 #
 $tgresourceGroupName = "ASM-POC"
-$tgvirtualNetworkName = "VNet-NonProd"
+$tgvirtualNetworkName = "VNet-Prod"
 $tgSubnetName = "backend"
 $tgPublicSubnetName = "public"
 $tgVNet = Get-AzureRmVirtualNetwork -Name $tgvirtualNetworkName -ResourceGroupName $tgresourceGroupName
@@ -18,12 +18,12 @@ $tgVNet = Get-AzureRmVirtualNetwork -Name $tgvirtualNetworkName -ResourceGroupNa
 # CSR environment (the resource group contains the CSR resources: VM, SA, NICs, NSG, UDR, etc.)
 # #Get-AzureRmVMImageSku -Location westus -PublisherName cisco -Offer cisco-csr-1000v
 #
-$rgCSR = "rg-uw-network-csr-nonprod"
-$avSetName = "as-uw-network-csr-nonprod"
-$machineName = "UWNETCSRNP02"
-$storageAccountname = "asuwvmnetcsr02nonprod"
+$rgCSR = "rg-uw-network-csr-prod"
+$avSetName = "as-uw-network-csr-prod"
+$machineName = "MYUWNETCSRP02"
+$storageAccountname = "myasuwvmnetcsr02prod"
 $location = "West US"
-$routeTableName = "vnet-uw-frontend-nonprod-CSR-RouteTable"
+$routeTableName = "vnet-uw-backend-prod-CSR-RouteTable"
 $routeTableCfgName = "Route-To-CSR"
 $onPremPrefix = "10.200.8.0/21"
 
