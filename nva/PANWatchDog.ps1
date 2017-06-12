@@ -28,8 +28,8 @@ $NextHopType="VirtualAppliance"
 # New-AzureRmRoleAssignment -RoleDefinitionName Contributor -ServicePrincipalName $app.ApplicationId
 #
 
-$pass = ConvertTo-SecureString "xxxxxxxxxxxxx" -AsPlainText –Force
-$cred = New-Object -TypeName pscredential –ArgumentList xxxxxxxx-ac93-4014-a595-f62503f99db5,$pass
+$pass = ConvertTo-SecureString "xxxxxxxxxxxxx" -AsPlainText -Force
+$cred = New-Object -TypeName pscredential -ArgumentList xxxxxxxx-ac93-4014-a595-f62503f99db5,$pass
 Login-AzureRmAccount -Credential $cred -ServicePrincipal -TenantId xxxxxxxx-86f1-41af-91ab-2d7cd011db47
 
 #

@@ -28,7 +28,7 @@ $networkInterface2 = New-AzureRmNetworkInterface -Name "pan003NicTrust" -Resourc
 
 # Prepare OS Disk
 $diskName="OSDisk"
-$osDiskUri = $storageAccount.PrimaryEndpoints.Blob.ToString() + “vhds/” + $machineName + $diskName + “.vhd”
+$osDiskUri = $storageAccount.PrimaryEndpoints.Blob.ToString() + "vhds/"� + $machineName + $diskName + ".vhd"�
 
 # New VM config
 $virtualMachineConfig = New-AzureRmVMConfig -VMName $machineName -VMSize $vmSize
