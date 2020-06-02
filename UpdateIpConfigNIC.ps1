@@ -22,7 +22,7 @@ for ($i = 0; $i -lt $SOURCE_JSON.Name.Count; $i++)
 $DNIC = Get-AzNetworkInterface -ResourceId $DEST_NIC_ID
 $table.GetEnumerator() | ForEach-Object {
     # We will skip the Primary IP config
-    if ("$($_.Key)" -eq "ipconfig1") { return }
+    if ("$($_.Key)" -eq "ipconfig1" -or "$($_.Key)" -eq "ConfigSync-01") { return }
     $DNIC | Add-AzNetworkInterfaceIpConfig -Name "$($_.Key)" -PrivateIpAddress "$($_.Value)" -PrivateIpAddressVersion IPv4 -SubnetId $DEST_SUBNET_ID
 }
 
